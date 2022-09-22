@@ -1,10 +1,9 @@
-from controllers import Controllers
+from controllers import ControllerManager
 
 
 
 def main():
-    coco = Controllers()
-    print(coco.controllers[0].methods_dict)
+    coco = ControllerManager()
 
 if __name__ == '__main__':
     main()

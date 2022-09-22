@@ -1,3 +1,4 @@
+from ast import comprehension
 import re
 
 from my_http.http_constants.http_methods import HTTP_METHODS_AS_LIST, GET, POST, PUT, DELETE
@@ -7,36 +8,69 @@ from my_socketserver import BaseRequestHandler
 
 class BaseController():
     def __init__(self, base_path=""):
-        pattern = re.compile("^__.*__$")
-        base_controller_methods_list = list(filter(lambda x:(pattern.match(x) == None) , dir(self.__class__.__bases__[0])))
-        methods_list = list(filter(lambda x:(pattern.match(x) == None and x not in base_controller_methods_list) , dir(self)))
+        self.methods_list = self._get_methods_list()
 
         self.methods_dict = dict()
-        for method in methods_list:
+        for method in self.methods_list:
             self.methods_dict[method] = base_path
         
-        errors = self._validate_controller()
-        if errors:
-            raise ValueError(f"Controller methods do not comply with notation guidelines. Should have one of {HTTP_METHODS_AS_LIST} at the begging of name, delimited with an underscore. Methods which do not comply: {errors}")
+        self._validate_http_methods_notation()
 
 
-    def _validate_controller(self):
-        errors = list()
+    def _get_methods_list(self):
+        pattern = re.compile("^__.*__$")
+        base_controller_methods_list = list(filter(lambda x:(pattern.match(x) == None) , dir(BaseController)))
+        methods_list = list(filter(lambda x:(pattern.match(x) == None and x not in base_controller_methods_list) , dir(self)))
+        return methods_list
+
+
+    def _validate_http_methods_notation(self):
         for method in self.methods_dict:
             if method.split("_")[0] not in HTTP_METHODS_AS_LIST:
-                errors.append(method)
-        return errors
+                raise ValueError(f" \"{method}\" method from controller: \"{self.__class__.__name__}\" should have one of {HTTP_METHODS_AS_LIST} at the begging of name, delimited with an underscore.")
 
 
+    def validate_methods_dict(self):        
+        for method in self.methods_list:
+            try:
+                self.methods_dict[method]
+            except KeyError:
+                raise ValueError(f"Method \"{method}\" does not have a path set in controller \"{self.__class__.__name__}\" initialization.")
+
+        for method, path in self.methods_dict.items():
+            if method not in self.methods_list:
+                raise ValueError(f"Method \"{method}\" declared in controller \"{self.__class__.__name__}\" initialization, does not exist")
+
+
+
+    def validate_paths(self, other_controllers):
+        def validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path):
+            pattern = re.compile(re.sub("{.*}", ".*", path))
+            if pattern.match(other_path) is not None:
+                comprehensive_error_dict = {"controller" : self.__class__.__name__, "method" : method, "path" : path}
+                comprehensive_error_dict_other = {"controller" : other_controller.__class__.__name__, "method" : other_method, "path" : other_path}
+                raise ValueError(f"Path ambiguity detected between: {comprehensive_error_dict} and {comprehensive_error_dict_other}")
+
+        for idx, (method, path) in enumerate(self.methods_dict.items()):
+            for other_method, other_path in list(self.methods_dict.items())[:idx] + list(self.methods_dict.items())[idx + 1:]:
+                validate_the_2_paths_for_ambiguity(method, path, self, other_method, other_path)
+
+            for other_controller in other_controllers:
+                for other_method, other_path in other_controller.methods_dict.items():
+                    validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path)
+
+
+    #TODO IMPLEMENT THIS
     def find_implementation(self, http_request):
         pass
 
 
 
 class HttpHandler(BaseRequestHandler):
-    def __init__(self, controller_class_list):
-        self.controller_class_list = controller_class_list
+    def __init__(self, controller_manager):
+        self.controller_manager = controller_manager
         self.HTTP_VERSION = "HTTP/1.0"
+        self.super.__init__()
 
     def handle(self):
         
@@ -114,6 +148,7 @@ class HttpHandler(BaseRequestHandler):
         return HttpRequest(http_method, route_mapping, http_version, headers, body)
 
 
+    #TODO: implement
     def find_implementation_and_execute(self, http_request):
-        for controller in self.controller_class_list:
-            pass
+        if self.controller_manager.find_implementation_and_execute(http_request) == False:
+            return False
