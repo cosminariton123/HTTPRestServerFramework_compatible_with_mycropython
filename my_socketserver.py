@@ -17,7 +17,7 @@ class SocketServer():
 
     def accept(self):
         request, client_address = self.server.accept()
-
+        print(f"Serving client: {client_address}")
         self.RequestHandlerClass(request, client_address, self.server, self.controller_manager)
 
 class BaseRequestHandler:

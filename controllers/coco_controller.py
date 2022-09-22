@@ -1,4 +1,5 @@
 from my_http.http_handler import BaseController
+from my_http.data_types import HttpResponse
 
 class CocoController(BaseController):
     def __init__(self):
@@ -7,7 +8,8 @@ class CocoController(BaseController):
         
         self.methods_dict["get_world"] += "/world"
 
-    def get_world(self, coco):
-        print(5/0)
-        return 5
+    def get_world(self, http_request):
+        print(5)
+        response = HttpResponse(200, {"Content-Length": str(0)}, "")
+        return response
 
