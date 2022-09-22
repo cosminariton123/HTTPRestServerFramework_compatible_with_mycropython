@@ -2,9 +2,7 @@ from machine import Pin
 import network
 import time
 
-from config import SSID, WLAN_KEY
-
-def connect_to_internet():
+def connect_to_internet(SSID, WLAN_KEY):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(SSID, WLAN_KEY)
@@ -14,6 +12,6 @@ def connect_to_internet():
         pin.toggle()
         time.sleep(1)
     
-    pin.low()
+    pin.high()
     ip = wlan.ifconfig()[0]
     return ip

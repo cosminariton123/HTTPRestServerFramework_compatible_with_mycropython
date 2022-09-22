@@ -5,16 +5,9 @@ class CocoController(BaseController):
         base_path="/Coco"
         super().__init__(base_path)
         
-        self.methods_dict["post_power"] += "/power"
-        self.methods_dict["get_world"] += "/{coco}"
-        self.methods_dict["put_racaciunga"] += "/racaciunga"
+        self.methods_dict["get_world"] += "/world"
 
-    def post_power(self, b, c=5):
-        print(c)
-        return self.a ** b
+    def get_world(self, coco):
+        print(5/0)
+        return 5
 
-    def get_world(self):
-        print("World")
-
-    def put_racaciunga(self):
-        print("racaciunga")

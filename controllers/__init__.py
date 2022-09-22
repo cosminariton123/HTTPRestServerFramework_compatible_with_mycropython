@@ -1,6 +1,9 @@
 import os
 import re
 
+from my_http.data_types import HttpResponse
+from my_http.http_constants.response_codes import INTERNAL_SERVER_ERROR
+
 class ControllerManager():
     def __init__(self, controllers_folder_path="controllers"):
         pattern = re.compile("^__.*__.*$")
@@ -60,10 +63,39 @@ class ControllerManager():
 
     def _validate_controllers_methods_dict(self):
         for controller in self.controllers:
-            controller.validate_methods_dict()
+            controller._validate_methods_dict()
 
 
     def _validate_paths(self):
         for idx, controller in enumerate(self.controllers):
-            controller.validate_paths(self.controllers[:idx] + self.controllers[idx + 1:])
+            controller._validate_paths(self.controllers[:idx] + self.controllers[idx + 1:])
 
+
+
+    def find_implementation_and_execute(self, http_request):
+        for controller in self.controllers:
+            method = controller._find_implementation(http_request.route_mapping)
+            if method is not None:
+                method_address = getattr(controller, method)
+                try:
+                    result = method_address(http_request)
+                except Exception as e:
+                    trace = []
+                    tb = e.__traceback__
+                    while tb is not None:
+                        trace.append({
+                            "filename" : tb.tb_frame.f_code.co_filename,
+                            "name" : tb.tb_frame.f_code.co_name,
+                            "lineno" : tb.tb_lineno
+                        })
+                        tb = tb.tb_next
+                    print(str({
+                        "type" : type(e).__name__,
+                        "message" : str(e),
+                        "trace" : trace
+                    }))
+
+                    headers = {"Content-Length": str(0)}
+                    body = ""
+                    result = HttpResponse(INTERNAL_SERVER_ERROR, headers, body)
+                return result

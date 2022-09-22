@@ -1,3 +1,4 @@
 PORT = 8000
 SSID = "DIGI-Z8d3"
 WLAN_KEY = "RgATB47V"
+ENCODING = 'utf-8'

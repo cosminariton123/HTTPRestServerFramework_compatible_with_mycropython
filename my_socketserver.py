@@ -1,13 +1,15 @@
 import socket
 
 class SocketServer():
-    def __init__(self, address_and_port, RequestHandlerClass):
+    def __init__(self, address_and_port, RequestHandlerClass, controller_manager):
         self.address_and_port = address_and_port
         self.RequestHandlerClass = RequestHandlerClass
+        self.controller_manager = controller_manager
         self.server = socket.socket()
 
-    def server_forever(self):
+    def serve_forever(self):
         self.server.bind(self.address_and_port)
+        print(f"Binded at: {self.address_and_port}")
         self.server.listen()
 
         while True:
@@ -16,9 +18,7 @@ class SocketServer():
     def accept(self):
         request, client_address = self.server.accept()
 
-        handler = self.RequestHandlerClass(request, client_address, self.server)
-        handler.handle()
-        request.close()
+        self.RequestHandlerClass(request, client_address, self.server, self.controller_manager)
 
 class BaseRequestHandler:
     def __init__(self, request, client_address, server):
@@ -38,4 +38,4 @@ class BaseRequestHandler:
         pass
 
     def finish(self):
-        pass
+        self.request.close()

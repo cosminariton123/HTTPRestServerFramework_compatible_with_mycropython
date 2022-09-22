@@ -1,10 +1,10 @@
-from ast import comprehension
 import re
 
-from my_http.http_constants.http_methods import HTTP_METHODS_AS_LIST, GET, POST, PUT, DELETE
-from my_http.http_constants.response_codes import convert_code_to_string, BAD_REQUEST
-from my_http.data_types import HttpRequest, HttpResponse
+from my_http.http_constants.http_methods import HTTP_METHODS_AS_LIST
+from my_http.http_constants.response_codes import BAD_REQUEST, HTTP_VERSION_NOT_SUPPORTED
+from my_http.data_types import HttpRequest, _HttpResponse, HttpResponse
 from my_socketserver import BaseRequestHandler
+from config import ENCODING
 
 class BaseController():
     def __init__(self, base_path=""):
@@ -30,7 +30,7 @@ class BaseController():
                 raise ValueError(f" \"{method}\" method from controller: \"{self.__class__.__name__}\" should have one of {HTTP_METHODS_AS_LIST} at the begging of name, delimited with an underscore.")
 
 
-    def validate_methods_dict(self):        
+    def _validate_methods_dict(self):        
         for method in self.methods_list:
             try:
                 self.methods_dict[method]
@@ -43,7 +43,7 @@ class BaseController():
 
 
 
-    def validate_paths(self, other_controllers):
+    def _validate_paths(self, other_controllers):
         def validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path):
             pattern = re.compile(re.sub("{.*}", ".*", path))
             if pattern.match(other_path) is not None:
@@ -60,24 +60,34 @@ class BaseController():
                     validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path)
 
 
-    #TODO IMPLEMENT THIS
-    def find_implementation(self, http_request):
+    #BUG NOT WORKING WITH PATH VARIABLE OR QUERY PARAMS
+    def _find_implementation(self, path):
+        for method, stored_path in self.methods_dict.items():
+            if path == stored_path:
+                return method
+        return None
+
+
+    #TODO
+    def get_path_variable_as_string(self, method):
+        pass
+
+    #TODO
+    def get_query_param(self, method):
         pass
 
 
-
 class HttpHandler(BaseRequestHandler):
-    def __init__(self, controller_manager):
+    def __init__(self, request, client_address, server, controller_manager):
         self.controller_manager = controller_manager
-        self.HTTP_VERSION = "HTTP/1.0"
-        self.super.__init__()
+        self.HTTP_VERSION = "HTTP/1.1"
+        super().__init__(request, client_address, server)
 
     def handle(self):
-        
         data = ""
         while True:
-            data += self.request.recv(1024)
-            if self.check_if_all_data_is_recieved(data) is True:
+            data += str(self.request.recv(1024), ENCODING)
+            if HttpHandler.check_if_all_data_is_recieved(data) is True:
                 break
 
         valid_request = True
@@ -91,64 +101,81 @@ class HttpHandler(BaseRequestHandler):
                 valid_request = False
 
         if valid_request:
-            status, headers, body = self.find_implementation_and_execute(http_request)
+            response = self.find_implementation_and_execute(http_request)
+            response = _HttpResponse(self.HTTP_VERSION, response.status_code, response.headers, response.body)
 
         else:
-            status = convert_code_to_string(BAD_REQUEST)
+            status = HTTP_VERSION_NOT_SUPPORTED
             headers = {"Content-Length": str(0)}
             body = ""
+            response = _HttpResponse(status, headers, body, self.HTTP_VERSION)
         
-        response = HttpResponse(self.HTTP_VERSION, status, headers, body).make_response_string()
-        self.request.send(response)
+        a = response.make_response_string()
+        self.request.send(response.make_response_string())
 
 
     def check_if_all_data_is_recieved(data):
         if data == "" or data is None:
             return False
 
-        data = data.strip().split("\r\n")
+        if len(data.split("\r\n\r\n")) == 1:
+            return False
+
         body_length = None
-        for line in data:
+        for line in data.split("\r\n\r\n")[0].split("\r\n"):
             if "Content-Length" in line:
                 line = line.split(":")
                 body_length = int(line[1])
         
-        if body_length is None:
+        method = data.split("\r\n")[0].split(" ")[0]
+        if body_length is None and method != "GET":
             return False
 
-        if len(data.split("\r\n") < 2):
-            return False
+        if body_length is None and method == "GET":
+            return True
         
-        if data.split("\r\n")[1] == body_length:
+        if len(data.split("\r\n\r\n")[1]) == body_length:
             return True
 
 
-    def decode_data(data):
+    def decode_data(self, data):
         http_method = None
         route_mapping = None
         http_version = None
         headers = dict()
         body = None
 
-        data = data.strip().split("\r\n")
+        data = data.split("\r\n")
 
         http_method = data[0].split(" ")[0]
         route_mapping = data[0].split(" ")[1]
         http_version = data[0].split(" ")[2]
         
+        headers_portion = list()
         for idx, line in enumerate(data):
             if line == "":
                 headers_portion = data[1:idx]
-                body = data[idx:]
+                body = data[idx+1:]
+                break
+        
+        aux = body
+        body = ""
+        for line in aux:
+            body += line + "\r\n"
+        body = body[:-2]
 
         for line in headers_portion:
             line = line.split(": ")
             headers[line[0]] = line[1]
 
-        return HttpRequest(http_method, route_mapping, http_version, headers, body)
+        return HttpRequest(http_method, route_mapping, http_version, headers, body, self.client_address, self.server)
 
 
-    #TODO: implement
     def find_implementation_and_execute(self, http_request):
-        if self.controller_manager.find_implementation_and_execute(http_request) == False:
-            return False
+        result = self.controller_manager.find_implementation_and_execute(http_request)
+        if result is None:
+            headers = {"Content-Length": str(0)}
+            body = ""
+            result = HttpResponse(BAD_REQUEST, headers, body)
+
+        return result
