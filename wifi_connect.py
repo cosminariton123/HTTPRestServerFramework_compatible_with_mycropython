@@ -12,6 +12,6 @@ def connect_to_internet(SSID, WLAN_KEY):
         pin.toggle()
         time.sleep(1)
     
-    pin.high()
+    pin.low()
     ip = wlan.ifconfig()[0]
     return ip
