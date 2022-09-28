@@ -2,9 +2,9 @@ from my_http.http_constants.response_codes import get_http_status_by_number, RES
 from config import ENCODING
 
 class HttpRequest():
-    def __init__(self, http_method, route_mapping, http_version, headers, body, client_address, server):
+    def __init__(self, http_method, path, http_version, headers, body, client_address, server):
         self.http_method = http_method
-        self.route_mapping = route_mapping
+        self.path = path
         self.http_version = http_version
         self.headers = headers
         self.body = body

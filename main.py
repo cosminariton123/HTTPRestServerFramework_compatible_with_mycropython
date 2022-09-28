@@ -4,7 +4,7 @@ from my_socketserver import SocketServer
 #from wifi_connect import connect_to_internet
 from config import SSID, WLAN_KEY
 
-from machine import Pin
+#from machine import Pin
 
 def main():
     #ip = connect_to_internet(SSID, WLAN_KEY)

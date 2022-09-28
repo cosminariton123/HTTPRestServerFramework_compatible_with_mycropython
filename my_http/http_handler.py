@@ -41,12 +41,28 @@ class BaseController():
             if method not in self.methods_list:
                 raise ValueError(f"Method \"{method}\" declared in controller \"{self.__class__.__name__}\" initialization, does not exist")
 
+    def _regex_escape(string):
+        regex_special_chars_map = {chr(i): '\\' + chr(i) for i in b'()[]{}?*+-|^$\\.&~# \t\n\r\v\f'}
+        aux = ""
+        for ch in string:
+            if ch in regex_special_chars_map:
+                aux += regex_special_chars_map[ch]
+            else:
+                aux += ch
+        return aux
+
+    def _match_path(pattern_path, path):
+        pattern_path = BaseController._regex_escape(pattern_path)  
+        pattern = re.compile("\\\{[^{}]*}")
+        uncompiled_pattern_string = re.sub(pattern, ".*", pattern_path)
+        pattern = re.compile(uncompiled_pattern_string)
+
+        return pattern.match(path)
 
 
     def _validate_paths(self, other_controllers):
         def validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path):
-            pattern = re.compile(re.sub("{.*}", ".*", path))
-            if pattern.match(other_path) is not None:
+            if BaseController._match_path(path, other_path) is not None:
                 comprehensive_error_dict = {"controller" : self.__class__.__name__, "method" : method, "path" : path}
                 comprehensive_error_dict_other = {"controller" : other_controller.__class__.__name__, "method" : other_method, "path" : other_path}
                 raise ValueError(f"Path ambiguity detected between: {comprehensive_error_dict} and {comprehensive_error_dict_other}")
@@ -60,20 +76,116 @@ class BaseController():
                     validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path)
 
 
-    #BUG NOT WORKING WITH PATH VARIABLE OR QUERY PARAMS
+
+    def _reverse_string(string):
+        stack = list()
+        for elem in string:
+            stack.append(elem)
+        string = ""
+        while stack:
+            string += stack.pop()
+        return string
+
+    def _compute_path_without_request_param_string(path):
+            path = BaseController._reverse_string(path)
+            path = path.split("?", 1)[0]
+            path = BaseController._reverse_string(path)
+            return path
+
+
+    def _compute_request_param_string(path):
+            path = BaseController._reverse_string(path)
+            path = path.split("?", 1)[1]
+            path = BaseController._reverse_string(path)
+            return path
+
+
     def _find_implementation(self, path):
+        path = BaseController._compute_path_without_request_param_string(path)
         for method, stored_path in self.methods_dict.items():
-            if path == stored_path:
+            if BaseController._match_path(stored_path, path):
                 return method
         return None
 
 
-    #TODO
-    def get_path_variable_as_string(self, method):
-        pass
+
+    def _compute_ordered_list_of_keywords(path):
+        pattern = re.compile("{[^{}]*}")
+        ordered_list_of_keywords = list()
+        current_key = pattern.search(path)
+        if current_key is not None:
+            ordered_list_of_keywords.append(current_key.group(0)[1:-1])
+        slice = path
+        while current_key is not None:
+            slice = slice[current_key.end():]
+            current_key = pattern.search(slice)
+            if current_key is not None:
+                ordered_list_of_keywords.append(current_key.group(0)[1:-1])
+        return ordered_list_of_keywords
+
+
+    def _compute_ordered_lists_of_keywords_starts_and_ends(path):
+        pattern = re.compile("{[^{}]*}")
+        offset = 0
+        ordered_list_of_keywords_starts = list()
+        ordered_list_of_keywords_ends = list()
+        current_key = pattern.search(path)
+        if current_key is not None:
+            ordered_list_of_keywords_starts.append(current_key.start())
+            ordered_list_of_keywords_ends.append(current_key.end())
+            offset = current_key.end()
+        while current_key is not None:
+            slice = path[offset:]
+            current_key = pattern.search(slice)
+            if current_key is not None:
+                ordered_list_of_keywords_starts.append(current_key.start() + offset)
+                ordered_list_of_keywords_ends.append(current_key.end() + offset)
+                offset+= current_key.end()
+        return ordered_list_of_keywords_starts, ordered_list_of_keywords_ends
+
+
+
+    def _compute_ordered_list_of_values(path, stored_path):
+        ordered_list_of_keywords_starts, ordered_list_of_keywords_ends = BaseController._compute_ordered_lists_of_keywords_starts_and_ends(stored_path)
+
+        idx_path = ordered_list_of_keywords_starts[0]
+        ordered_list_of_values = list()
+        slice = path
+        for (idx_s, keyword_start), keyword_end in zip(enumerate(ordered_list_of_keywords_starts), ordered_list_of_keywords_ends):
+            value = ""
+            last_slice = slice
+            while BaseController._match_path(stored_path[keyword_start:], slice) is not None and last_slice != "":
+                if idx_path < len(path):
+                    value += path[idx_path]
+                idx_path += 1
+                last_slice = slice
+                slice = path[idx_path:]
+            if idx_path < len(path):
+                value = value[:-1]
+            ordered_list_of_values.append(value)
+            
+            if idx_s + 1 < len(ordered_list_of_keywords_starts):
+                if len(value) > 0:
+                    idx_path += ordered_list_of_keywords_starts[idx_s + 1] - keyword_end - 1
+                else:
+                    idx_path += ordered_list_of_keywords_starts[idx_s + 1] - keyword_end
+        return ordered_list_of_values
+
+
+    def get_path_variables(self, path):
+        stored_path = self.methods_dict[self._find_implementation(path)]   #Can be implemented more efficiently with getting caller name or passing a parameter
+        path = BaseController._compute_path_without_request_param_string(path)
+        ordered_list_of_keywords = BaseController._compute_ordered_list_of_keywords(stored_path)
+        ordered_list_of_values = BaseController._compute_ordered_list_of_values(path, stored_path)
+        path_variables = dict()
+        for key, value in zip(ordered_list_of_keywords, ordered_list_of_values):
+            path_variables[key] = value
+        return path_variables
+
+
 
     #TODO
-    def get_query_param(self, method):
+    def get_query_param(self, path):
         pass
 
 
@@ -174,8 +286,8 @@ class HttpHandler(BaseRequestHandler):
     def find_implementation_and_execute(self, http_request):
         result = self.controller_manager.find_implementation_and_execute(http_request)
         if result is None:
-            headers = {"Content-Length": str(0)}
-            body = ""
+            body = "Path not found"
+            headers = {"Content-Length": str(len(body))}
             result = HttpResponse(BAD_REQUEST, headers, body)
 
         return result

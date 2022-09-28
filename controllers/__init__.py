@@ -74,7 +74,7 @@ class ControllerManager():
 
     def find_implementation_and_execute(self, http_request):
         for controller in self.controllers:
-            method = controller._find_implementation(http_request.route_mapping)
+            method = controller._find_implementation(http_request.path)
             if method is not None:
                 method_address = getattr(controller, method)
                 try:
@@ -89,13 +89,15 @@ class ControllerManager():
                             "lineno" : tb.tb_lineno
                         })
                         tb = tb.tb_next
-                    print(str({
+
+                    stacktrace_error_message = str({
                         "type" : type(e).__name__,
                         "message" : str(e),
                         "trace" : trace
-                    }))
+                    })
+                    print(stacktrace_error_message)
 
-                    headers = {"Content-Length": str(0)}
-                    body = ""
+                    body = stacktrace_error_message
+                    headers = {"Content-Length": str(len(body))}
                     result = HttpResponse(INTERNAL_SERVER_ERROR, headers, body)
                 return result
