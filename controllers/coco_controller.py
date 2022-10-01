@@ -24,7 +24,7 @@ class CocoController(BaseController):
 
     def get_query_param_test(self, http_request):
         id = self.get_query_param(http_request.path)["id"]
-        body = Message(str(id))
+        body = Message(str(int(id) ** 2))
         response = HttpResponse(200, {}, body)
         return response
 

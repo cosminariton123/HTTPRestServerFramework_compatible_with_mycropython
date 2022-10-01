@@ -187,4 +187,7 @@ class BaseController():
     def get_query_param(self, path):
         path = BaseController._compute_request_param_string(path)
         path = path.split("&")
-        return {key.split("=")[0]:value.split("1")[1] for (key, value) in zip(path, path)}
+        for pair in path:
+            if re.compile("^[^=]*=[^=]*$").match(pair) is None:
+                raise ValueError(f"Querry parameters are not formated correctly: {pair}")
+        return {elem.split("=")[0]:elem.split("=")[1] for elem in path}
