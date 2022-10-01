@@ -83,17 +83,21 @@ class BaseController():
         return string
 
     def _compute_path_without_request_param_string(path):
-            path = BaseController._reverse_string(path)
-            path = path.split("?", 1)[0]
-            path = BaseController._reverse_string(path)
+        if len(path.split("?")) < 2:
             return path
+        path = BaseController._reverse_string(path)
+        path = path.split("?", 1)[1]
+        path = BaseController._reverse_string(path)
+        return path
 
 
     def _compute_request_param_string(path):
-            path = BaseController._reverse_string(path)
-            path = path.split("?", 1)[1]
-            path = BaseController._reverse_string(path)
-            return path
+        if len(path.split("?")) < 2:
+            return ""
+        path = BaseController._reverse_string(path)
+        path = path.split("?", 1)[0]
+        path = BaseController._reverse_string(path)
+        return path
 
 
     def _find_implementation(self, path):
@@ -180,6 +184,7 @@ class BaseController():
 
 
 
-    #TODO
     def get_query_param(self, path):
-        pass
+        path = BaseController._compute_request_param_string(path)
+        path = path.split("&")
+        return {key.split("=")[0]:value.split("1")[1] for (key, value) in zip(path, path)}

@@ -108,26 +108,30 @@ def _reverse_string(string):
         string += stack.pop()
     return string
 
+
+
 def _compute_path_without_request_param_string(path):
-        path = _reverse_string(path)
-        path = path.split("?", 1)[0]
-        path = _reverse_string(path)
+    if len(path.split("?")) < 2:
         return path
+    path = _reverse_string(path)
+    path = path.split("?", 1)[1]
+    path = _reverse_string(path)
+    return path
 
 
 def _compute_request_param_string(path):
-        path = _reverse_string(path)
-        path = path.split("?", 1)[1]
-        path = _reverse_string(path)
-        return path
-
-
+    if len(path.split("?")) < 2:
+        return ""
+    path = _reverse_string(path)
+    path = path.split("?", 1)[0]
+    path = _reverse_string(path)
+    return path
 
 
 def main():
-    import sys
-    if sys.implementation.name == "micropython":
-	    print("Coco")
+    path = "http://192.168.100.56:8000/Coco/query"
+    print("path:", _compute_path_without_request_param_string(path))
+    print("req_param:", _compute_request_param_string(path))
 
 if __name__ == "__main__":
     

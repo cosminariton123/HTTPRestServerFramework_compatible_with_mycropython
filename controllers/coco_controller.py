@@ -9,6 +9,7 @@ class CocoController(BaseController):
         
         self.methods_dict["get_world"] += "/world"
         self.methods_dict["post_power"] += "/power/{value}"
+        self.methods_dict["get_query_param_test"] += "/query"
 
     def get_world(self, http_request):
         print(5)
@@ -18,6 +19,12 @@ class CocoController(BaseController):
     def post_power(self, http_request):
         body = int(self.get_path_variables(http_request.path)["value"]) ** 2
         body = Message(str(body))
+        response = HttpResponse(200, {}, body)
+        return response
+
+    def get_query_param_test(self, http_request):
+        id = self.get_query_param(http_request.path)["id"]
+        body = Message(str(id))
         response = HttpResponse(200, {}, body)
         return response
 
