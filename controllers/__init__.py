@@ -1,11 +1,14 @@
 import os
 import re
+from io import StringIO
+from message import Message
 
 from my_http.data_types import HttpResponse
 from my_http.http_constants.response_codes import INTERNAL_SERVER_ERROR
+from config import CONTROOLERS_FOLDER_PATH
 
 class ControllerManager():
-    def __init__(self, controllers_folder_path="controllers"):
+    def __init__(self, controllers_folder_path):
         pattern = re.compile("^__.*__.*$")
         files_in_controller_folder = os.listdir(controllers_folder_path)
         files_in_controller_folder = list(filter(lambda x:(pattern.match(x) == None) , files_in_controller_folder))
@@ -80,24 +83,17 @@ class ControllerManager():
                 try:
                     result = method_address(http_request)
                 except Exception as e:
-                    trace = []
-                    tb = e.__traceback__
-                    while tb is not None:
-                        trace.append({
-                            "filename" : tb.tb_frame.f_code.co_filename,
-                            "name" : tb.tb_frame.f_code.co_name,
-                            "lineno" : tb.tb_lineno
-                        })
-                        tb = tb.tb_next
-
-                    stacktrace_error_message = str({
-                        "type" : type(e).__name__,
-                        "message" : str(e),
-                        "trace" : trace
-                    })
-                    print(stacktrace_error_message)
-
-                    body = stacktrace_error_message
+                    stacktrace_error_message = StringIO()
+                    import sys
+                    if sys.implementation.name == "micropython":
+                        sys.print_exception(e, stacktrace_error_message)
+                    else:
+                        import traceback
+                        traceback.print_exception(e, file=stacktrace_error_message)
+                    print(stacktrace_error_message.getvalue())
+                    body = stacktrace_error_message.getvalue()
                     headers = {"Content-Length": str(len(body))}
                     result = HttpResponse(INTERNAL_SERVER_ERROR, headers, body)
                 return result
+
+CONTROLLER_MANAGER_INSTANCE = ControllerManager(CONTROOLERS_FOLDER_PATH)

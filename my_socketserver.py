@@ -1,10 +1,9 @@
 import socket
 
 class SocketServer():
-    def __init__(self, address_and_port, RequestHandlerClass, controller_manager):
+    def __init__(self, address_and_port, RequestHandlerClass):
         self.address_and_port = address_and_port
         self.RequestHandlerClass = RequestHandlerClass
-        self.controller_manager = controller_manager
         self.server = socket.socket()
 
     def serve_forever(self):
@@ -18,7 +17,7 @@ class SocketServer():
     def accept(self):
         request, client_address = self.server.accept()
         print(f"Serving client: {client_address}")
-        self.RequestHandlerClass(request, client_address, self.server, self.controller_manager)
+        self.RequestHandlerClass(request, client_address, self.server)
 
 class BaseRequestHandler:
     def __init__(self, request, client_address, server):

@@ -122,10 +122,13 @@ def _compute_request_param_string(path):
         return path
 
 
+
+
 def main():
-    a = "http://192.168.100.56:8000/Coco/power/5?gigi=3"
-    print(_compute_path_without_request_param_string(a))
-    print(_compute_request_param_string(a))
+    import sys
+    if sys.implementation.name == "micropython":
+	    print("Coco")
 
 if __name__ == "__main__":
+    
     main()

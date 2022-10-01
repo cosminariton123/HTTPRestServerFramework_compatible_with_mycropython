@@ -1,4 +1,4 @@
-from my_http.http_handler import BaseController
+from my_http.base_controller import BaseController
 from my_http.data_types import HttpResponse
 from message import Message
 

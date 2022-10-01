@@ -1,4 +1,4 @@
-from my_http.http_handler import BaseController
+from my_http.base_controller import BaseController
 
 class GigiController(BaseController):
     def __init__(self):
