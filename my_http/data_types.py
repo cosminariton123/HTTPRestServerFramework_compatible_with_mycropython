@@ -28,14 +28,15 @@ class HttpResponse():
                 error(INTERNAL_SERVER_ERROR)
         if type(headers) is not dict:
             error(INTERNAL_SERVER_ERROR)
-        try:
-            body = body.serialize()
-        except:
-            error(INTERNAL_SERVER_ERROR)
 
-        self.status_code = str(status_code)
+        status_code = str(status_code)
+        body = str(body)
+        if "Content-Length" not in headers:
+            headers["Content-Length"] = str(len(body))
+
+        self.status_code = status_code
         self.headers = headers
-        self.body = str(body)
+        self.body = body
 
 class _HttpResponse():
     def __init__(self, http_version, status_code, headers, body):

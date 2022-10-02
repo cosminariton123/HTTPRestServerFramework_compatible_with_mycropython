@@ -1,11 +1,11 @@
 import os
 import re
 from io import StringIO
-from message import Message
 
 from my_http.data_types import HttpResponse
 from my_http.http_constants.response_codes import INTERNAL_SERVER_ERROR
 from config import CONTROOLERS_FOLDER_PATH
+from error_message import ErrorMessage
 
 class ControllerManager():
     def __init__(self, controllers_folder_path):
@@ -91,9 +91,8 @@ class ControllerManager():
                         import traceback
                         traceback.print_exception(e, file=stacktrace_error_message)
                     print(stacktrace_error_message.getvalue())
-                    body = stacktrace_error_message.getvalue()
-                    headers = {"Content-Length": str(len(body))}
-                    result = HttpResponse(INTERNAL_SERVER_ERROR, headers, body)
+                    body = ErrorMessage(stacktrace_error_message.getvalue())
+                    result = HttpResponse(INTERNAL_SERVER_ERROR, {}, body)
                 return result
 
 CONTROLLER_MANAGER_INSTANCE = ControllerManager(CONTROOLERS_FOLDER_PATH)

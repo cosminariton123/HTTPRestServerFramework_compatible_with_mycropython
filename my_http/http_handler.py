@@ -4,6 +4,7 @@ from my_http.data_types import HttpRequest, _HttpResponse, HttpResponse
 from my_socketserver import BaseRequestHandler
 from config import ENCODING
 from controllers import CONTROLLER_MANAGER_INSTANCE
+from error_message import ErrorMessage
 
 
 class HttpHandler(BaseRequestHandler):
@@ -39,7 +40,6 @@ class HttpHandler(BaseRequestHandler):
             body = ""
             response = _HttpResponse(status, headers, body, self.HTTP_VERSION)
         
-        a = response.make_response_string()
         self.request.send(response.make_response_string())
 
 
@@ -103,8 +103,7 @@ class HttpHandler(BaseRequestHandler):
     def find_implementation_and_execute(self, http_request):
         result = self.controller_manager.find_implementation_and_execute(http_request)
         if result is None:
-            body = "Path not found"
-            headers = {"Content-Length": str(len(body))}
-            result = HttpResponse(BAD_REQUEST, headers, body)
+            body =  ErrorMessage("Path not found")
+            result = HttpResponse(BAD_REQUEST, {}, body)
 
         return result

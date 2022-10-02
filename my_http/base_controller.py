@@ -51,8 +51,7 @@ class BaseController():
         pattern_path = BaseController._regex_escape(pattern_path)  
         pattern = re.compile("\\\{[^{}]*}")
         uncompiled_pattern_string = re.sub(pattern, ".*", pattern_path)
-        pattern = re.compile(uncompiled_pattern_string)
-
+        pattern = re.compile(f"^{uncompiled_pattern_string}$")
         return pattern.match(path)
 
 

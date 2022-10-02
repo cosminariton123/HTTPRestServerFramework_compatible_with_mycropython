@@ -128,10 +128,15 @@ def _compute_request_param_string(path):
     return path
 
 
+def test():
+    a = {"a":5}
+    if "a" in a:
+        print(a["a"])
+
 def main():
-    path = "http://192.168.100.56:8000/Coco/query"
-    print("path:", _compute_path_without_request_param_string(path))
-    print("req_param:", _compute_request_param_string(path))
+    test()
+
+
 
 if __name__ == "__main__":
     
