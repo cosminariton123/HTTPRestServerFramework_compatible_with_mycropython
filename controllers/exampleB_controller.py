@@ -1,5 +1,5 @@
 from my_http.base_controller import BaseController
-from my_http.data_types import HttpResponse
+from my_http.http_data_types import HttpResponse
 from message import Message
 
 class ExampleBController(BaseController):

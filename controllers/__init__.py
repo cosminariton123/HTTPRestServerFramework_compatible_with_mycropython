@@ -2,10 +2,10 @@ import os
 import re
 from io import StringIO
 
-from my_http.data_types import HttpResponse
+from my_http.http_data_types import HttpResponse
 from my_http.http_constants.response_codes import INTERNAL_SERVER_ERROR
 from config import CONTROOLERS_FOLDER_PATH
-from error_message import ErrorMessage
+from my_http.dtos import ErrorMessage
 
 class ControllerManager():
     def __init__(self, controllers_folder_path):
