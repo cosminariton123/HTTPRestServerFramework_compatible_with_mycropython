@@ -1,3 +1,4 @@
 .vscode
 __pycache__
 venv
+config_info_that_shouldnt_appear_on_git.py

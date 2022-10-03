@@ -1,10 +1,10 @@
-from my_http.http_constants.response_codes import BAD_REQUEST, HTTP_VERSION_NOT_SUPPORTED
-from my_http.http_constants.http_methods import GET
-from my_http.http_data_types import HttpRequest, _HttpResponse, HttpResponse
-from MyFramework.my_socketserver import BaseRequestHandler
+from my_framework.my_http.http_constants.response_codes import BAD_REQUEST, HTTP_VERSION_NOT_SUPPORTED
+from my_framework.my_http.http_constants.http_methods import GET
+from my_framework.my_http.http_data_types import HttpRequest, _HttpResponse, HttpResponse
+from my_framework.my_socketserver import BaseRequestHandler
 from config import ENCODING
 from controllers import CONTROLLER_MANAGER_INSTANCE
-from my_http.dtos import ErrorMessage
+from my_framework.my_http.dtos import ErrorMessage
 
 
 class HttpHandler(BaseRequestHandler):

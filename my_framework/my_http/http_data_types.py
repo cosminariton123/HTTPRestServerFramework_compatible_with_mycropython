@@ -1,4 +1,4 @@
-from my_http.http_constants.response_codes import get_http_status_by_number, RESPONSE_CODES_LIST, INTERNAL_SERVER_ERROR
+from my_framework.my_http.http_constants.response_codes import get_http_status_by_number, RESPONSE_CODES_LIST, INTERNAL_SERVER_ERROR
 from config import ENCODING
 
 class HttpRequest():

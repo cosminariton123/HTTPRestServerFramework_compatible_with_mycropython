@@ -1,6 +1,6 @@
-from my_http.base_controller import BaseController
-from my_http.http_data_types import HttpResponse
-from message import Message
+from my_framework.my_http.base_controller import BaseController
+from my_framework.my_http.http_data_types import HttpResponse
+from dtos.message import Message
 
 class ExampleAController(BaseController):
     def __init__(self):

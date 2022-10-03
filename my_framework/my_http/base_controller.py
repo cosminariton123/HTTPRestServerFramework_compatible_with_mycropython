@@ -1,4 +1,4 @@
-from my_http.http_constants.http_methods import HTTP_METHODS_AS_LIST
+from my_framework.my_http.http_constants.http_methods import HTTP_METHODS_AS_LIST
 import re
 
 

@@ -1,12 +1,12 @@
-from my_http.http_handler import HttpHandler
-from MyFramework.my_socketserver import SocketServer
+from my_framework.my_http.http_handler import HttpHandler
+from my_framework.my_socketserver import SocketServer
 from config import SSID, WLAN_KEY
 
 
 import sys
 
 if sys.implementation.name == "micropython":
-    from MyMachine.wifi_connect import connect_to_internet
+    from my_machine.wifi_connect import connect_to_internet
     from machine import Pin
 
 def main():

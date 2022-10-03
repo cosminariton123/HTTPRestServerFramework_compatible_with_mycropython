@@ -1,4 +1,4 @@
-from MyFramework.serializable import Serializable
+from my_framework.serializable import Serializable
 
 class ErrorMessage(Serializable):
     def __init__(self, message=None):

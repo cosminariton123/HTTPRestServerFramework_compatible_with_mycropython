@@ -1,4 +1,4 @@
-from MyFramework.serializable import Serializable
+from my_framework.serializable import Serializable
 import json
 
 class Message(Serializable):
