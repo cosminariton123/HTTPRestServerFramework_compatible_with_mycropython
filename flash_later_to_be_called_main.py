@@ -1,5 +1,5 @@
 from my_framework.my_http.http_handler import HttpHandler
-from my_framework.my_socketserver import SocketServer
+from my_framework.my_socketserver.my_socketserver import SocketServer
 from config import SSID, WLAN_KEY
 
 

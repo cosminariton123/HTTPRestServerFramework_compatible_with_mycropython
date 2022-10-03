@@ -18,23 +18,3 @@ class SocketServer():
         request, client_address = self.server.accept()
         print(f"Serving client: {client_address}")
         self.RequestHandlerClass(request, client_address, self.server)
-
-class BaseRequestHandler:
-    def __init__(self, request, client_address, server):
-        self.request = request
-        self.client_address = client_address
-        self.server = server
-        self.setup()
-        try:
-            self.handle()
-        finally:
-            self.finish()
-
-    def setup(self):
-        pass
-
-    def handle(self):
-        pass
-
-    def finish(self):
-        self.request.close()
