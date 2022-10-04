@@ -9,8 +9,8 @@ class ExampleAController(BaseController):
         
         self.methods_dict["get_world"] += "/world"
         self.methods_dict["post_world"] += "/world/path_variable/{name}"
-        self.methods_dict["put_query_param"] += "world/query"
-        self.methods_dict["delete_body"] += "world/body"
+        self.methods_dict["put_query_param"] += "/world/query"
+        self.methods_dict["delete_body"] += "/world/body"
 
     def get_world(self, http_request):
         body = Message("Hello world!")
