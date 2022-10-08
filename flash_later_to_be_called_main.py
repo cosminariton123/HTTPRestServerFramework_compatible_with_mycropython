@@ -5,15 +5,13 @@ from config import SSID, WLAN_KEY
 import sys
 
 if sys.implementation.name == "micropython":
-    from my_machine.wifi_connect import connect_to_internet
-    from machine import Pin
+    from my_machine import pie_pico_w_instance
 
 def main():
 
     if sys.implementation.name == "micropython":
-        ip = connect_to_internet(SSID, WLAN_KEY)
-        pin = Pin("LED", Pin.OUT)
-        pin.high()
+        ip = pie_pico_w_instance.connect_to_internet(SSID, WLAN_KEY)
+        pie_pico_w_instance.onboard_led_on()
     else:
         ip = ""
     address_and_port = (ip, 8000)
