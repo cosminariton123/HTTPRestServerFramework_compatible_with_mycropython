@@ -82,6 +82,8 @@ class ControllerManager():
                 method_address = getattr(controller, method)
                 try:
                     result = method_address(http_request)
+                    if result is None or not isinstance(result, HttpResponse):
+                        raise ValueError(f"Method \"{method}\" from controller \"{controller.__class__.__name__}\" doesn't return an \"{HttpResponse.__name__}\" object. It returns \"{result.__class__.__name__}\".")
                 except Exception as e:
                     stacktrace_error_message = StringIO()
                     import sys
