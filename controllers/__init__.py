@@ -77,7 +77,7 @@ class ControllerManager():
 
     def find_implementation_and_execute(self, http_request):
         for controller in self.controllers:
-            method = controller._find_implementation(http_request.path)
+            method = controller._find_implementation(http_request)
             if method is not None:
                 method_address = getattr(controller, method)
                 try:

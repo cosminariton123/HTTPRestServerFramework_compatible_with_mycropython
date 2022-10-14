@@ -3,7 +3,7 @@ from config import ENCODING
 
 class HttpRequest():
     def __init__(self, http_method, path, http_version, headers, body, client_address, server):
-        self.http_method = http_method
+        self.method = http_method
         self.path = path
         self.http_version = http_version
         self.headers = headers

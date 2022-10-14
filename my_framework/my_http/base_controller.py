@@ -64,11 +64,13 @@ class BaseController():
 
         for idx, (method, path) in enumerate(self.methods_dict.items()):
             for other_method, other_path in list(self.methods_dict.items())[:idx] + list(self.methods_dict.items())[idx + 1:]:
-                validate_the_2_paths_for_ambiguity(method, path, self, other_method, other_path)
+                if method.split("_")[0] == other_method.split("_")[0]:
+                    validate_the_2_paths_for_ambiguity(method, path, self, other_method, other_path)
 
             for other_controller in other_controllers:
                 for other_method, other_path in other_controller.methods_dict.items():
-                    validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path)
+                    if method.split("_")[0] == other_method.split("_")[0]:
+                        validate_the_2_paths_for_ambiguity(method, path, other_controller, other_method, other_path)
 
 
 
@@ -99,11 +101,12 @@ class BaseController():
         return path
 
 
-    def _find_implementation(self, path):
-        path = BaseController._compute_path_without_request_param_string(path)
+    def _find_implementation(self, http_request):
+        path = BaseController._compute_path_without_request_param_string(http_request.path)
         for method, stored_path in self.methods_dict.items():
-            if BaseController._match_path(stored_path, path):
-                return method
+            if method.split("_")[0] == http_request.method:
+                if BaseController._match_path(stored_path, path):
+                    return method
         return None
 
 
@@ -171,9 +174,9 @@ class BaseController():
         return ordered_list_of_values
 
 
-    def get_path_variables(self, path):
-        stored_path = self.methods_dict[self._find_implementation(path)]   #Can be implemented more efficiently with getting caller name or passing a parameter
-        path = BaseController._compute_path_without_request_param_string(path)
+    def get_path_variables(self, http_request):
+        stored_path = self.methods_dict[self._find_implementation(http_request)]   #Can be implemented more efficiently with getting caller name or passing a parameter
+        path = BaseController._compute_path_without_request_param_string(http_request.path)
         ordered_list_of_keywords = BaseController._compute_ordered_list_of_keywords(stored_path)
         ordered_list_of_values = BaseController._compute_ordered_list_of_values(path, stored_path)
         path_variables = dict()
@@ -183,7 +186,8 @@ class BaseController():
 
 
 
-    def get_query_param(self, path):
+    def get_query_param(self, http_request):
+        path = http_request.path
         path = BaseController._compute_request_param_string(path)
         path = path.split("&")
         for pair in path:

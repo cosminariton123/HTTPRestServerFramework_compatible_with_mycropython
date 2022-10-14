@@ -8,6 +8,7 @@ class ExampleAController(BaseController):
         super().__init__(base_path)
         
         self.methods_dict["get_world"] += "/world"
+        self.methods_dict["post_world_simple"] += "/world"
         self.methods_dict["post_world"] += "/world/path_variable/{name}"
         self.methods_dict["put_query_param"] += "/world/query"
         self.methods_dict["delete_body"] += "/world/body"
@@ -17,14 +18,20 @@ class ExampleAController(BaseController):
         response = HttpResponse(200, {}, body)
         return response
 
+
+    def post_world_simple(self, http_request):
+        body = Message("Hello world but with POST!")
+        response = HttpResponse(200, {}, body)
+        return response
+
     def post_world(self, http_request):
-        name = self.get_path_variables(http_request.path)["name"]
+        name = self.get_path_variables(http_request)["name"]
         body = Message(f"Hello {name}! I'm using path variables!")
         response = HttpResponse(200, {}, body)
         return response
 
     def put_query_param(self, http_request):
-        name = self.get_query_param(http_request.path)["name"]
+        name = self.get_query_param(http_request)["name"]
         body = Message(f"Hello {name}! I'm using query parameters!")
         response = HttpResponse(200, {}, body)
         return response

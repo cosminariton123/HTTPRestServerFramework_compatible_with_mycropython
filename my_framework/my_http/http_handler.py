@@ -76,7 +76,7 @@ class HttpHandler(BaseRequestHandler):
 
         data = data.split("\r\n")
 
-        http_method = data[0].split(" ")[0]
+        http_method = data[0].split(" ")[0].lower()
         route_mapping = data[0].split(" ")[1]
         http_version = data[0].split(" ")[2]
         
