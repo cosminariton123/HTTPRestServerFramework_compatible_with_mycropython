@@ -1,6 +1,6 @@
 from my_framework.my_http.http_handler import HttpHandler
 from my_framework.my_socketserver.my_socketserver import SocketServer
-from config import SSID, WLAN_KEY
+from config import SSID, WLAN_KEY, PORT
 
 import sys
 
@@ -15,7 +15,7 @@ def main():
     else:
         ip = ""
 
-    address_and_port = (ip, 8000)
+    address_and_port = (ip, PORT)
     http_server = SocketServer(address_and_port, HttpHandler)
     http_server.serve_forever()
 
