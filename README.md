@@ -3,6 +3,12 @@
 It is designed to run on small applications.  
 Makes development and testing easy even on headless machines.
 
+## Single threaded behaviour
+
+The HTTP server will serve indefinetly on a single thread, processing requests at the time of arrival.  
+While the server is processing the request, new requests may timeout as there doesn't exist a queue for requests
+and no other threads are spawned.
+
 ## How to use the framework
 
 ### Configuration files
