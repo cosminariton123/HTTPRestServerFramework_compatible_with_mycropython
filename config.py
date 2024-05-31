@@ -5,3 +5,4 @@ SSID = SSID
 WLAN_KEY = WLAN_KEY
 ENCODING = 'utf-8'
 CONTROOLERS_FOLDER_PATH = "controllers"
+PRODUCTION = True  #If set to False, it will send the stacktrace as body alongside 500 InternalServerError

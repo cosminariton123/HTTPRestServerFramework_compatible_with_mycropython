@@ -4,7 +4,7 @@ from io import StringIO
 
 from my_framework.my_http.http_data_types import HttpResponse
 from my_framework.my_http.http_constants.response_codes import INTERNAL_SERVER_ERROR
-from config import CONTROOLERS_FOLDER_PATH
+from config import CONTROOLERS_FOLDER_PATH, PRODUCTION
 from my_framework.my_http.dtos import ErrorMessage
 
 class ControllerManager():
@@ -93,7 +93,10 @@ class ControllerManager():
                         import traceback
                         traceback.print_exception(e, file=stacktrace_error_message)
                     print(stacktrace_error_message.getvalue())
-                    body = ErrorMessage(stacktrace_error_message.getvalue())
+
+                    body = ""
+                    if not PRODUCTION:
+                        body = ErrorMessage(stacktrace_error_message.getvalue())
                     result = HttpResponse(INTERNAL_SERVER_ERROR, {}, body)
                 return result
 
