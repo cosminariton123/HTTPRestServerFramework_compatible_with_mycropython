@@ -10,7 +10,7 @@ from my_framework.my_http.dtos import ErrorMessage
 class HttpHandler(BaseRequestHandler):
     def __init__(self, request, client_address, server):
         self.controller_manager = CONTROLLER_MANAGER_INSTANCE
-        self.HTTP_VERSION = "HTTP/1.1"
+        self.HTTP_VERSION = "HTTP/1.0"
         super().__init__(request, client_address, server)
 
     def handle(self):
@@ -25,10 +25,7 @@ class HttpHandler(BaseRequestHandler):
             http_request = self.decode_data(data)
         except IndexError:
             valid_request = False
-
-        if valid_request is True:
-            if http_request.http_version != self.HTTP_VERSION:
-                valid_request = False
+            
 
         if valid_request:
             response = self.find_implementation_and_execute(http_request)
