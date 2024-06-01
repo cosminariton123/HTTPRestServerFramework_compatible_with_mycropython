@@ -38,7 +38,7 @@ class HttpHandler(BaseRequestHandler):
             status = HTTP_VERSION_NOT_SUPPORTED
             headers = {"Content-Length": str(0)}
             body = ""
-            response = _HttpResponse(status, headers, body, self.HTTP_VERSION)
+            response = _HttpResponse(self.HTTP_VERSION, status, headers, body)
         
         self.request.send(response.make_response_string())
 
